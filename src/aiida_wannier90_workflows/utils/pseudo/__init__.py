@@ -61,6 +61,10 @@ def get_pseudo_orbitals(pseudos: ty.Mapping[str, PseudoPotentialData]) -> dict:
         * PseudoDojo/0.4/PBE/SR/stringent/upf
         * PseudoDojo/0.5/PBE/SR/standard/upf
         * PseudoDojo/0.5/PBE/SR/stringent/upf
+        * PseudoDojo/0.4/PBE/FR/standard/upf
+        * Pslibrary/1.0.0/relPBE/PAW
+            ** Pslibrary should be installed manually.
+            ** Please follow `src/aiida_wannier90_workflows/utils/pseudo/data/__init__.py`
     """
     from .data import load_pseudo_metadata
 
@@ -92,11 +96,6 @@ def get_pseudo_orbitals(pseudos: ty.Mapping[str, PseudoPotentialData]) -> dict:
         load_pseudo_metadata("semicore/PseudoDojo_0.4_PBEsol_FR_standard_upf.json")
     )
     pseudo_data.append(load_pseudo_metadata("semicore/pslibrary_paw_relpbe_1.0.0.json"))
-    pseudo_data.append(load_pseudo_metadata("semicore/pslib_20231128.json"))
-    pseudo_data.append(load_pseudo_metadata("semicore/pslib_20231207.json"))
-    pseudo_data.append(load_pseudo_metadata("semicore/pslib_20231218.json"))
-    pseudo_data.append(load_pseudo_metadata("semicore/pseudo_mix_20231224.json"))
-    pseudo_data.append(load_pseudo_metadata("semicore/pslib_nc_20231229.json"))
 
     pseudo_orbitals = {}
     for element in pseudos:
