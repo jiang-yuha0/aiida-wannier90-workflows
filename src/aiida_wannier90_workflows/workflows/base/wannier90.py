@@ -257,6 +257,7 @@ class Wannier90BaseWorkChain(ProtocolMixin, BaseRestartWorkChain):
         from aiida_quantumespresso.workflows.protocols.utils import recursive_merge
 
         from aiida_wannier90_workflows.utils.kpoints import (
+            check_minimal_kmesh_from_kpoints,
             create_kpoints_from_distance,
             get_explicit_kpoints,
         )
@@ -433,6 +434,9 @@ class Wannier90BaseWorkChain(ProtocolMixin, BaseRestartWorkChain):
             structure,
             distance=meta_parameters["kpoints_distance"],
             force_parity=meta_parameters["kpoints_force_parity"],
+        )
+        kpoints = check_minimal_kmesh_from_kpoints(
+            kpoints, minimal_ngrid=meta_parameters.get("kpoints_min_ngrid", 5)
         )
         inputs["kpoints"] = get_explicit_kpoints(kpoints)
         parameters["mp_grid"] = kpoints.get_kpoints_mesh()[0]

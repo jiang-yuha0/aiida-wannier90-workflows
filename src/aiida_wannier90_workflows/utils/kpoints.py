@@ -244,3 +244,23 @@ def get_kpoints_from_bands(bands: orm.BandsData) -> orm.KpointsData:
     kpoints.set_kpoints(kpoints=explicit_kpoints, labels=labels)
 
     return kpoints
+
+
+def check_minimal_kmesh_from_kpoints(
+    kpoints: orm.KpointsData, minimal_ngrid: int = 5
+) -> orm.KpointsData:
+    """Check if the kmesh contains enough points in every axis.
+
+    If ngrid in some axis is smaller than `minimal_ngrid`,
+    this function will refactor the kpoints.
+
+    :param kpoints: contains a N1 * N2 * N3 mesh.
+    :param minimal_ngrid: minimal ngrid required for accurate finite element.
+    """
+
+    kmesh = np.array(get_mesh_from_kpoints(kpoints))
+    if any(kmesh < minimal_ngrid):
+        kmesh[kmesh < minimal_ngrid] = minimal_ngrid
+        kpoints.set_kpoints_mesh(kmesh)
+
+    return kpoints
