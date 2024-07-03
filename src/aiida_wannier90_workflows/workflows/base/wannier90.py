@@ -339,6 +339,23 @@ class Wannier90BaseWorkChain(ProtocolMixin, BaseRestartWorkChain):
                 spin_non_collinear=spin_non_collinear,
                 spin_orbit_coupling=spin_orbit_coupling,
             )
+        elif (projection_type == WannierProjectionType.ANALYTIC and external_projectors is not None):
+            num_bands = get_wannier_number_of_bands_ext(
+                structure=structure,
+                pseudos=pseudos,
+                external_projectors=external_projectors,
+                factor=meta_parameters["num_bands_factor"],
+                only_valence=only_valence,
+                spin_polarized=spin_polarized,
+                spin_non_collinear=spin_non_collinear,
+                spin_orbit_coupling=spin_orbit_coupling,
+            )
+            num_projs = get_number_of_projections_ext(
+                structure=structure,
+                external_projectors=external_projectors,
+                spin_non_collinear=spin_non_collinear,
+                spin_orbit_coupling=spin_orbit_coupling,
+            )
         else:
             num_bands = get_wannier_number_of_bands(
                 structure=structure,
@@ -398,12 +415,23 @@ class Wannier90BaseWorkChain(ProtocolMixin, BaseRestartWorkChain):
         elif projection_type == WannierProjectionType.ANALYTIC:
             pseudo_orbitals = get_pseudo_orbitals(pseudos)
             projections = []
-            for kind in structure.kinds:
-                for orb in pseudo_orbitals[kind.name]["pswfcs"]:
-                    if meta_parameters["exclude_semicore"]:
-                        if orb in pseudo_orbitals[kind.name]["semicores"]:
-                            continue
-                    projections.append(f"{kind.name}:{orb[-1].lower()}")
+            if external_projectors is not None:
+                for kind in structure.kinds:
+                    orbs = list(set([_["label"] for _ in external_projectors[kind.symbol]]))
+                    for orb in orbs:
+                        if meta_parameters["exclude_semicore"]:
+                            if orb in pseudo_orbitals[kind.name]["semicores"]:
+                                continue
+                        projections.append(
+                            f"{kind.name}:{orb[-1].lower()}"
+                        )
+            else: # external_projector is None, normal case
+                for kind in structure.kinds:
+                    for orb in pseudo_orbitals[kind.name]["pswfcs"]:
+                        if meta_parameters["exclude_semicore"]:
+                            if orb in pseudo_orbitals[kind.name]["semicores"]:
+                                continue
+                        projections.append(f"{kind.name}:{orb[-1].lower()}")
             inputs[cls._inputs_namespace]["projections"] = orm.List(list=projections)
         elif projection_type == WannierProjectionType.RANDOM:
             settings = inputs[cls._inputs_namespace].get("settings", {})
