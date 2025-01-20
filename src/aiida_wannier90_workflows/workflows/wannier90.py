@@ -379,6 +379,7 @@ class Wannier90WorkChain(
             SpinType.NONE,
             SpinType.SPIN_ORBIT,
             SpinType.NON_COLLINEAR,
+            SpinType.COLLINEAR
         ]:
             raise NotImplementedError(f"spin type `{spin_type}` is not supported.")
 
