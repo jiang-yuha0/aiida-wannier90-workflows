@@ -95,6 +95,7 @@ def get_pseudo_orbitals(pseudos: ty.Mapping[str, PseudoPotentialData]) -> dict:
     pseudo_data.append(load_pseudo_metadata("semicore/pseudo_mix_20231224.json"))
 
     pseudo_orbitals = {}
+<<<<<<< HEAD
     for element in pseudos:
         symbol = pseudos[element].element
         for data in pseudo_data:
@@ -104,6 +105,18 @@ def get_pseudo_orbitals(pseudos: ty.Mapping[str, PseudoPotentialData]) -> dict:
         else:
             raise ValueError(
                 f"Cannot find pseudopotential {symbol} with md5 {pseudos[element].md5}"
+=======
+    # pseudos dictionary will contain kinds as keys, which may change
+    # e.g. when including Hubbard corrections 'Mn'->'Mn3d'
+    for kind in pseudos:
+        for data in pseudo_data:
+            if data.get(pseudos[kind].element, {}).get("md5", "") == pseudos[kind].md5:
+                pseudo_orbitals[kind] = data[pseudos[kind].element]
+                break
+        else:
+            raise ValueError(
+                f"Cannot find pseudopotential {kind} with md5 {pseudos[kind].md5}"
+>>>>>>> 805e23b (Small fix in utility functions for pseudos (#60))
             )
 
     return pseudo_orbitals
@@ -163,6 +176,7 @@ def get_semicore_list(
     return semicore_list
 
 
+<<<<<<< HEAD
 def get_semicore_list_ext(
     structure: orm.StructureData,
     external_projectors: dict,
@@ -243,6 +257,9 @@ def get_frozen_list_ext(
 
 
 def get_wannier_number_of_bands(
+=======
+def get_wannier_number_of_bands(  # pylint: disable=too-many-positional-arguments
+>>>>>>> 805e23b (Small fix in utility functions for pseudos (#60))
     structure,
     pseudos,
     factor=1.2,
@@ -396,6 +413,7 @@ def get_number_of_projections(
                 "only <str, aiida.orm.UpfData> type is accepted"
             )
 
+<<<<<<< HEAD
     # e.g. composition = {'Ga': 1, 'As': 1}
     composition = structure.get_composition()
 
@@ -411,6 +429,20 @@ def get_number_of_projections(
         nprojs = get_number_of_projections_from_upf(upf)
         if spin_non_collinear and not spin_orbit_coupling:
             # For magnetic calculation with non-SOC pseudo, QE will generate
+=======
+    if spin_orbit_coupling is None:
+        # I use the first pseudo to detect SOCs
+        kind = structure.get_kind_names()[0]
+        spin_orbit_coupling = is_soc_pseudo(get_upf_content(pseudos[kind]))
+
+    tot_nprojs = 0
+    for site in structure.sites:
+        upf = pseudos[site.kind_name]
+        nprojs = get_number_of_projections_from_upf(upf)
+        soc = is_soc_pseudo(get_upf_content(pseudos[site.kind_name]))
+        if spin_orbit_coupling and not soc:
+            # For SOC calculation with non-SOC pseudo, QE will generate
+>>>>>>> 805e23b (Small fix in utility functions for pseudos (#60))
             # 2 PSWFCs from each one PSWFC in the pseudo
             # For collinear-magnetic calculation, spin up and down will calc
             # seperately, so nprojs do not times 2
@@ -419,7 +451,7 @@ def get_number_of_projections(
             # For non-magnetic calculation with SOC pseudo, QE will average
             # the 2 PSWFCs into one
             nprojs //= 2
-        tot_nprojs += nprojs * composition[kind]
+        tot_nprojs += nprojs
 
     return tot_nprojs
 
@@ -508,11 +540,17 @@ def get_projections(
             )
 
     projections = []
+<<<<<<< HEAD
     reduced_pseudos = reduce_pseudos(pseudos, structure)
     # e.g. composition = {'Ga': 1, 'As': 1}
     composition = structure.get_composition()
     for kind in composition:
         upf = reduced_pseudos[kind]
+=======
+
+    for kind_name in structure.get_kind_names():
+        upf = pseudos[kind_name]
+>>>>>>> 805e23b (Small fix in utility functions for pseudos (#60))
         projs = get_projections_from_upf(upf)
         projections.extend(projs)
     return projections
@@ -555,13 +593,19 @@ def get_number_of_electrons(
             )
 
     tot_nelecs = 0
+<<<<<<< HEAD
     reduced_pseudos = reduce_pseudos(pseudos, structure)
     # e.g. composition = {'Ga': 1, 'As': 1}
     composition = structure.get_composition()
     for kind in composition:
         upf = reduced_pseudos[kind]
+=======
+
+    for site in structure.sites:
+        upf = pseudos[site.kind_name]
+>>>>>>> 805e23b (Small fix in utility functions for pseudos (#60))
         nelecs = get_number_of_electrons_from_upf(upf)
-        tot_nelecs += nelecs * composition[kind]
+        tot_nelecs += nelecs
 
     return tot_nelecs
 
