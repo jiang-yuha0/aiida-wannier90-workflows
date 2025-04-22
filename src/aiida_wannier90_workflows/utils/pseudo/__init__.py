@@ -605,7 +605,7 @@ def get_number_of_electrons(
         upf = pseudos[site.kind_name]
 >>>>>>> 805e23b (Small fix in utility functions for pseudos (#60))
         nelecs = get_number_of_electrons_from_upf(upf)
-        tot_nelecs += nelecs
+        tot_nelecs += nelecs  * composition[kind]
 
     return tot_nelecs
 
